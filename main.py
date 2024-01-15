@@ -200,7 +200,7 @@ def SendMail(filepath):
     print("전송완료")
 
 count=0
-firstFlag=False
+firstFlag=True
 while True:
     timeNow=datetime.datetime.now().strftime("%H%M%S")
     print("현재시각:{}".format(timeNow))
