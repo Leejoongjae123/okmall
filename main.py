@@ -102,12 +102,14 @@ def GetInfo(url):
         # print("color:",color,"/ color_TYPE:",type(color))
         size = option.find_all('td')[1].get_text()
         # print("size:",size,"/ size_TYPE:",type(size))
-        sizeList.append(size)
+        size2 = option.find_all('td')[2].get_text()
+        sizeList.append(size+"("+size2+")")
         optionPrice = option.find_all('td')[3].get_text().replace(",","")
         print("optionPrice:",optionPrice,"/ optionPrice_TYPE:",type(optionPrice))
         regex=re.compile("\d+")
         numbers=regex.findall(optionPrice)[-1]
         optionPrice=int(numbers)-int(price)
+        print("optionPrice:",optionPrice,"/ optionPrice_TYPE:",type(optionPrice))
         optionPriceList.append(optionPrice)
         # print("optionPrice:",optionPrice,"/ optionPrice_TYPE:",type(optionPrice))
         # print("----------------------------------")
@@ -116,6 +118,10 @@ def GetInfo(url):
     else:
         originPrice = price
     print("originPrice:",originPrice,"/ originPrice_TYPE:",type(originPrice))
+
+    for index,optionPrice in enumerate(optionPriceList):
+        if optionPrice!=0:
+            optionPriceList[index]="+"+str(optionPriceList[index])
 
     optionListPrices="\n".join(str(num) for num in optionPriceList)
     print("optionListPrices:",optionListPrices,"/ optionListPrices_TYPE:",type(optionListPrices))
@@ -193,45 +199,47 @@ def SendMail(filepath):
     server.quit()
     print("전송완료")
 
-        
+count=0
+firstFlag=False
+while True:
+    timeNow=datetime.datetime.now().strftime("%H%M%S")
+    print("현재시각:{}".format(timeNow))
+    count+=1
+    time.sleep(0.9)
+    if firstFlag==True or timeNow=="030000":
+        # # ==========리스트가져오기
+        inputList=GetGoogleSpreadSheet()
+        with open('inputList.json', 'w',encoding='utf-8-sig') as f:
+            json.dump(inputList, f, indent=2,ensure_ascii=False)
+
+        # # ===========디테일가져오기
+        with open ('inputList.json', "r",encoding='utf-8-sig') as f:
+            inputList = json.load(f)
 
 
+        wb=openpyxl.Workbook()
+        ws=wb.active
+        columnName=['네이버상품번호','상품명','링크','재고여부(재고있음/품절)','구매가능색상','구매가능사이즈','기본판매가격','옵션별 가격']
+        ws.append(columnName)
+        timeNow=datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        for index,inputElem in enumerate(inputList):
+            text="{}/{}번째 확인중...".format(index+1,len(inputList))
+            if len(inputElem['url'])==0:
+                print("없어서스킵")
+                continue
+            print(text)
+            infos=GetInfo(inputElem['url'])
 
 
+            data=[inputElem['productNo'],inputElem['productName'],inputElem['url']]
+            data.extend(infos)
 
-# # ==========리스트가져오기
-# inputList=GetGoogleSpreadSheet()
-# with open('inputList.json', 'w',encoding='utf-8-sig') as f:
-#     json.dump(inputList, f, indent=2,ensure_ascii=False)
-#
-# # ===========디테일가져오기
-# with open ('inputList.json', "r",encoding='utf-8-sig') as f:
-#     inputList = json.load(f)
-#
-#
-# wb=openpyxl.Workbook()
-# ws=wb.active
-# columnName=['네이버상품번호','상품명','링크','재고여부(재고있음/품절)','구매가능색상','구매가능사이즈','기본판매가격','옵션별 가격']
-# ws.append(columnName)
-# timeNow=datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-# for index,inputElem in enumerate(inputList):
-#     text="{}/{}번째 확인중...".format(index+1,len(inputList))
-#     if len(inputElem['url'])==0:
-#         print("없어서스킵")
-#         continue
-#     print(text)
-#     infos=GetInfo(inputElem['url'])
-#
-#
-#     data=[inputElem['productNo'],inputElem['productName'],inputElem['url']]
-#     data.extend(infos)
-#
-#     print("data:",data,"/ data_TYPE:",type(data))
-#     ws.append(data)
-#     print("====================")
-#     filepath='result_{}.xlsx'.format(timeNow)
-#     wb.save(filepath)
-#     time.sleep(random.randint(5,10)*0.1)
+            print("data:",data,"/ data_TYPE:",type(data))
+            ws.append(data)
+            print("====================")
+            filepath='result_{}.xlsx'.format(timeNow)
+            wb.save(filepath)
+            time.sleep(random.randint(5,10)*0.1)
 
-# SendMail(filepath)
-SendMail('result_20240114_221601.xlsx')
+        SendMail(filepath)
+        firstFlag=False
