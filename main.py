@@ -119,12 +119,22 @@ def GetInfo(url):
         originPrice = price
     print("originPrice:",originPrice,"/ originPrice_TYPE:",type(originPrice))
 
+    balanceList=[]
+    for optionPrice in optionPriceList:
+        balanceList.append('10')
+
     for index,optionPrice in enumerate(optionPriceList):
         if optionPrice!=0:
-            optionPriceList[index]="+"+str(optionPriceList[index])
+            optionPriceList[index]=str(optionPriceList[index])
 
-    optionListPrices="\n".join(str(num) for num in optionPriceList)
-    print("optionListPrices:",optionListPrices,"/ optionListPrices_TYPE:",type(optionListPrices))
+    totalBalance=10*len(balanceList)
+    print("totalBalance:",totalBalance,"/ totalBalance_TYPE:",type(totalBalance))
+
+    optionListBalances="\n".join(str(num) for num in balanceList)
+    print("optionListBalances:",optionListBalances,"/ optionListBalances_TYPE:",type(optionListBalances))
+
+    optionListPrices = "\n".join(str(num) for num in optionPriceList)
+    print("optionListPrices:", optionListPrices, "/ optionListPrices_TYPE:", type(optionListPrices))
 
     optionListSizes = "\n".join(str(num) for num in sizeList)
     print("optionListSizes:",optionListSizes,"/ optionListSizes_TYPE:",type(optionListSizes))
@@ -132,7 +142,7 @@ def GetInfo(url):
     optionListColors = "\n".join(str(num) for num in colorList)
     print("optionListColors:",optionListColors,"/ optionListColors_TYPE:",type(optionListColors))
 
-    result=[isSoldOut,optionListColors,optionListSizes,originPrice,optionListPrices]
+    result=[isSoldOut,optionListColors,optionListSizes,originPrice,optionListPrices,optionListBalances,totalBalance]
     return result
     
 def SendMail(filepath):
@@ -219,7 +229,7 @@ while True:
 
         wb=openpyxl.Workbook()
         ws=wb.active
-        columnName=['네이버상품번호','상품명','링크','재고여부(재고있음/품절)','구매가능색상','구매가능사이즈','기본판매가격','옵션별 가격']
+        columnName=['네이버상품번호','상품명','링크','재고여부(재고있음/품절)','구매가능색상','구매가능사이즈','기본판매가격','옵션별 가격','옵션별 재고','총재고']
         ws.append(columnName)
         timeNow=datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         for index,inputElem in enumerate(inputList):
