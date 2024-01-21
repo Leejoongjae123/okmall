@@ -238,7 +238,12 @@ while True:
                 print("없어서스킵")
                 continue
             print(text)
-            infos=GetInfo(inputElem['url'])
+            try:
+                infos=GetInfo(inputElem['url'])
+            except:
+                print("에러로넘어감")
+                time.sleep(1)
+                continue
 
 
             data=[inputElem['productNo'],inputElem['productName'],inputElem['url']]
